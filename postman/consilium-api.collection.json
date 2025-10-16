@@ -1,0 +1,714 @@
+{
+	"info": {
+		"_postman_id": "550e8400-e29b-41d4-a716-446655440000",
+		"name": "Project Management API",
+		"description": "Collection completa para testar a API do Sistema de Gestão de Projetos.\n\n## Como usar:\n1. Configure as variáveis de ambiente (base_url, token)\n2. Execute a pasta \"Setup\" para registrar e fazer login\n3. O token é salvo automaticamente\n4. Execute os outros endpoints\n\n## Variáveis:\n- `base_url`: URL base da API (ex: http://localhost:8080/api/v1)\n- `token`: Token JWT (preenchido automaticamente após login)\n- `project_id`: ID do projeto criado (preenchido automaticamente)\n- `task_id`: ID da tarefa criada (preenchido automaticamente)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Setup",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('token', response.token);",
+									"    pm.test('Token saved to environment', function() {",
+									"        pm.expect(response.token).to.be.a('string');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"testuser@example.com\",\n  \"password\": \"Test@1234\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "Registra um novo usuário no sistema.\n\nO token retornado é automaticamente salvo na variável de ambiente."
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('token', response.token);",
+									"    pm.test('Status is 200', function() {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"    pm.test('Token received', function() {",
+									"        pm.expect(response.token).to.be.a('string');",
+									"    });",
+									"    pm.test('Username is correct', function() {",
+									"        pm.expect(response.username).to.eql('testuser');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"Test@1234\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Autentica o usuário e retorna um token JWT.\n\nO token é automaticamente salvo na variável de ambiente."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints de autenticação. Execute estes primeiro para obter o token JWT."
+		},
+		{
+			"name": "Projects",
+			"item": [
+				{
+					"name": "Create Project",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('project_id', response.id);",
+									"    pm.test('Status is 201', function() {",
+									"        pm.response.to.have.status(201);",
+									"    });",
+									"    pm.test('Project ID saved', function() {",
+									"        pm.expect(response.id).to.be.a('string');",
+									"    });",
+									"    pm.test('Location header present', function() {",
+									"        pm.response.to.have.header('Location');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Sistema de Vendas\",\n  \"description\": \"Aplicação completa para gerenciar vendas online\",\n  \"startDate\": \"2025-01-15\",\n  \"endDate\": \"2025-12-31\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/projects",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"projects"
+							]
+						},
+						"description": "Cria um novo projeto.\n\nO ID do projeto criado é salvo automaticamente na variável `project_id`."
+					},
+					"response": []
+				},
+				{
+					"name": "List All Projects",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 200', function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Response is array', function() {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/projects",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"projects"
+							]
+						},
+						"description": "Lista todos os projetos do usuário."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Project by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 200', function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Project has correct fields', function() {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('id');",
+									"    pm.expect(response).to.have.property('name');",
+									"    pm.expect(response).to.have.property('taskCount');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/projects/{{project_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"projects",
+								"{{project_id}}"
+							]
+						},
+						"description": "Busca um projeto específico por ID."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para gerenciamento de projetos.",
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			}
+		},
+		{
+			"name": "Tasks",
+			"item": [
+				{
+					"name": "Create Task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('task_id', response.id);",
+									"    pm.test('Status is 201', function() {",
+									"        pm.response.to.have.status(201);",
+									"    });",
+									"    pm.test('Task ID saved', function() {",
+									"        pm.expect(response.id).to.be.a('string');",
+									"    });",
+									"    pm.test('Task has project info', function() {",
+									"        pm.expect(response.projectId).to.be.a('string');",
+									"        pm.expect(response.projectName).to.be.a('string');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Implementar autenticação JWT\",\n  \"description\": \"Desenvolver sistema de login e registro com JWT\",\n  \"status\": \"TODO\",\n  \"priority\": \"HIGH\",\n  \"dueDate\": \"2025-02-15\",\n  \"projectId\": \"{{project_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks"
+							]
+						},
+						"description": "Cria uma nova tarefa vinculada a um projeto.\n\nO ID da tarefa é salvo automaticamente na variável `task_id`."
+					},
+					"response": []
+				},
+				{
+					"name": "List All Tasks",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 200', function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Response is array', function() {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tasks",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks"
+							]
+						},
+						"description": "Lista todas as tarefas ativas (não deletadas)."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter Tasks by Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 200', function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('All tasks have TODO status', function() {",
+									"    const response = pm.response.json();",
+									"    response.forEach(task => {",
+									"        pm.expect(task.status).to.eql('TODO');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tasks?status=TODO",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "TODO"
+								}
+							]
+						},
+						"description": "Filtra tarefas por status (TODO, DOING, DONE)."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter Tasks by Priority",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tasks?priority=HIGH",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks"
+							],
+							"query": [
+								{
+									"key": "priority",
+									"value": "HIGH"
+								}
+							]
+						},
+						"description": "Filtra tarefas por prioridade (LOW, MEDIUM, HIGH)."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter Tasks by Project",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tasks?projectId={{project_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks"
+							],
+							"query": [
+								{
+									"key": "projectId",
+									"value": "{{project_id}}"
+								}
+							]
+						},
+						"description": "Filtra tarefas de um projeto específico."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter Tasks (Combined)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tasks?status=TODO&priority=HIGH&projectId={{project_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "TODO"
+								},
+								{
+									"key": "priority",
+									"value": "HIGH"
+								},
+								{
+									"key": "projectId",
+									"value": "{{project_id}}"
+								}
+							]
+						},
+						"description": "Combina múltiplos filtros (status AND priority AND projectId)."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Task Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 200', function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Task status updated', function() {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.status).to.eql('DONE');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"DONE\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/{{task_id}}/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"{{task_id}}",
+								"status"
+							]
+						},
+						"description": "Atualiza o status de uma tarefa (TODO → DOING → DONE)."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Task (Soft Delete)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 204', function() {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tasks/{{task_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"{{task_id}}"
+							]
+						},
+						"description": "Deleta logicamente uma tarefa (soft delete).\n\nA tarefa não aparece mais nas listagens mas permanece no banco para auditoria."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para gerenciamento de tarefas.",
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			}
+		},
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Application Health",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 200', function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Application is UP', function() {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.status).to.eql('UP');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/../actuator/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"..",
+								"actuator",
+								"health"
+							]
+						},
+						"description": "Verifica o status de saúde da aplicação."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints de monitoramento e saúde da aplicação."
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080/api/v1",
+			"type": "string"
+		}
+	]
+}
