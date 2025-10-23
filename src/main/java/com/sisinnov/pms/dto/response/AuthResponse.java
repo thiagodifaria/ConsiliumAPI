@@ -4,11 +4,12 @@ import com.sisinnov.pms.enums.UserRole;
 
 public record AuthResponse(
         String token,
+        String refreshToken,
         String type,
         String username,
         UserRole role
 ) {
-    public AuthResponse(String token, String username, UserRole role) {
-        this(token, "Bearer", username, role);
+    public AuthResponse(String token, String refreshToken, String username, UserRole role) {
+        this(token, refreshToken, "Bearer", username, role);
     }
 }

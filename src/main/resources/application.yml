@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8081
 
 spring:
   application:
@@ -12,6 +12,34 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
+  cache:
+    type: redis
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: 6379
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: 5672
+    username: guest
+    password: guest
+    listener:
+      simple:
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 1000ms
+          multiplier: 2.0
+          max-interval: 10000ms
+        acknowledge-mode: auto
+        prefetch: 1
 
 management:
   endpoints:
@@ -29,11 +57,14 @@ management:
         enabled: true
   tracing:
     sampling:
-      probability: 1.0
+      probability: 0.0
   otlp:
     tracing:
       endpoint: http://tempo:4318/v1/traces
 
+logging:
+  config: classpath:logback-spring.xml
+
 jwt:
   secret: ${JWT_SECRET:your-secret-key-change-in-production}
-  expiration: 86400000
+  expiration: 900000

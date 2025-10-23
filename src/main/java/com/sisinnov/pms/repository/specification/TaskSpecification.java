@@ -11,7 +11,6 @@ import java.util.UUID;
 public class TaskSpecification {
 
     private TaskSpecification() {
-        // Utility class
     }
 
     public static Specification<Task> withStatus(TaskStatus status) {

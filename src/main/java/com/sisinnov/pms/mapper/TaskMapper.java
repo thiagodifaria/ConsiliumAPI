@@ -3,10 +3,12 @@ package com.sisinnov.pms.mapper;
 import com.sisinnov.pms.dto.request.CreateTaskRequest;
 import com.sisinnov.pms.dto.response.TaskResponse;
 import com.sisinnov.pms.entity.Task;
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TaskMapper {
 
     @Mapping(target = "id", ignore = true)

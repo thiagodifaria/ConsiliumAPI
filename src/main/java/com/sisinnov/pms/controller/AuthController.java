@@ -1,6 +1,7 @@
 package com.sisinnov.pms.controller;
 
 import com.sisinnov.pms.dto.request.LoginRequest;
+import com.sisinnov.pms.dto.request.RefreshTokenRequest;
 import com.sisinnov.pms.dto.request.RegisterRequest;
 import com.sisinnov.pms.dto.response.AuthResponse;
 import com.sisinnov.pms.service.AuthService;
@@ -42,5 +43,34 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/refresh")
+    @Operation(
+            summary = "Refresh access token",
+            description = "Generates new access token and refresh token using a valid refresh token. " +
+                    "Implements Refresh Token Rotation for enhanced security."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Token refreshed successfully"),
+            @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token")
+    })
+    public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        AuthResponse response = authService.refresh(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/logout")
+    @Operation(
+            summary = "Logout user",
+            description = "Revokes the refresh token, invalidating the user session on this device"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Logout successful"),
+            @ApiResponse(responseCode = "400", description = "Invalid request")
+    })
+    public ResponseEntity<Void> logout(@Valid @RequestBody RefreshTokenRequest request) {
+        authService.logout(request.refreshToken());
+        return ResponseEntity.noContent().build();
     }
 }

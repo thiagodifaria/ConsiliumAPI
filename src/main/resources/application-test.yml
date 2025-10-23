@@ -16,6 +16,17 @@ spring:
   h2:
     console:
       enabled: false
+  cache:
+    type: simple
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      repositories:
+        enabled: false
+  rabbitmq:
+    host: localhost
+    port: 5672
 
 logging:
   level:

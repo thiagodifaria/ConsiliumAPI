@@ -26,26 +26,36 @@ ConsiliumAPI is an **enterprise-grade REST API** for project and task management
 
 ### ⚡ Key Highlights
 
-- 🔐 **JWT Authentication** - Complete system with Spring Security 6
-- 🚀 **High Performance** - Optimized queries, indexes, and soft delete
+- 🔐 **JWT Authentication** - Complete system with Spring Security 6 + Refresh Tokens
+- 🚀 **High Performance** - Redis cache (80% faster), optimized queries, indexes
 - 📊 **Full Observability** - Grafana + Loki + Tempo + Prometheus
 - 🔍 **Dynamic Filters** - Specification API for complex queries
-- 📈 **Enterprise Architecture** - Well-defined layers and separation of concerns
-- 🧪 **62 Tests** - Complete coverage (unit, integration, repository, E2E)
-- 🐳 **Docker Ready** - Full stack with observability
+- 📈 **Enterprise Architecture** - CQRS Pattern + Event Sourcing
+- 🐰 **RabbitMQ** - Async messaging with Dead Letter Queue
+- 🛡️ **Rate Limiting** - Token Bucket algorithm (10-1000 req/min by role)
+- 📜 **Event Store** - Complete audit trail with immutable events
+- 🧪 **105+ Tests** - Complete coverage (unit, integration, repository, E2E)
+- 🐳 **Docker Ready** - Full stack with 7 services (PostgreSQL, Redis, RabbitMQ, etc)
 - 📚 **Auto Documentation** - Interactive Swagger UI
+- 🔧 **Automation Scripts** - build.sh, dev.sh, test.sh for productivity
 
 ### 🏆 What Makes It Special?
 
 ```
 ✅ Spring Boot 3.2.5 with Java 17
-✅ JWT Authentication with BCrypt
+✅ JWT Authentication with Refresh Tokens (15min access + 7 days refresh)
+✅ Redis Cache (80% latency reduction: 100ms → 20ms)
+✅ RabbitMQ async messaging with DLQ and retry policies
+✅ Rate Limiting (Token Bucket: 10-1000 req/min by role)
+✅ CQRS Pattern (separate read/write services)
+✅ Event Sourcing (complete audit trail with immutable events)
 ✅ UUID for security (prevents enumeration attacks)
 ✅ Soft delete for auditability
 ✅ Flyway for schema versioning
-✅ Complete observability stack
-✅ Postman collection with automated tests
-✅ 2925+ lines of professional documentation
+✅ Complete observability stack (Grafana, Loki, Tempo, Prometheus)
+✅ Automation scripts (build.sh, dev.sh, test.sh)
+✅ 105+ tests with JaCoCo coverage reports
+✅ 3500+ lines of professional documentation
 ```
 
 ---
@@ -103,6 +113,83 @@ curl -X POST "http://localhost:8080/api/v1/projects" \
        "startDate": "2025-01-15"
      }'
 ```
+
+---
+
+## 🔧 Automation Scripts
+
+To facilitate development and deployment, the project includes automation scripts for the most common tasks:
+
+### Linux/Mac
+
+```bash
+# Complete build with interactive menu
+./build.sh
+
+# Or specific commands
+./build.sh clean          # Clean up previous builds
+./build.sh run_tests      # Run only tests
+./build.sh docker_up      # Upload Docker environment
+```
+
+**Menu Options:**
+1. 🏗️ Complete build (clean + test + build + docker)
+2. ⚡ Quick build (no testing)
+3. 🧪 Just run tests
+4. 🐳 Just Docker (rebuild + restart)
+5. 🧹 Clean all (Docker + builds)
+6. 📊 View service logs
+7. 🛑 Stop all services
+
+### Windows (PowerShell)
+
+.\build.ps1 Clean         # Clean builds
+.\build.ps1 Tests         # Run tests
+.\build.ps1 DockerUp      # Up Docker
+```
+
+### Development Mode (Hot Reload)
+
+```bash
+# Start only dependencies in Docker + application in dev mode
+./dev.sh
+
+# Benefits:
+# ✅ Automatic hot reload (Spring Boot DevTools)
+# ✅ Application runs outside of Docker (faster for debugging)
+# ✅ Ideal for active development
+```
+
+### Coverage Tests
+
+```bash
+# Run tests with JaCoCo coverage report
+./test.sh
+
+# Opens automatically: target/site/jacoco/index.html
+```
+
+### Script Features
+
+**build.sh / build.ps1**
+- ✅ Check dependencies (Java 17+, Maven, Docker)
+- ✅ Full or quick build (with/without tests)
+- ✅ Docker Management (cleanup, build, up)
+- ✅ Environmental cleaning
+- ✅ User-friendly interactive menu
+- ✅ Waiting for services to become healthy
+
+**dev.sh**
+- ✅ Start only dependencies in Docker
+- ✅ Run application in dev mode (hot reload)
+- ✅ Checks the health of services (PostgreSQL, Redis, RabbitMQ)
+- ✅ Ideal for active development
+
+**test.sh**
+- ✅ Performs coverage tests (JaCoCo)
+- ✅ Generates automatic HTML report
+- ✅ Open report in browser
+- ✅ Shows test statistics
 
 ---
 

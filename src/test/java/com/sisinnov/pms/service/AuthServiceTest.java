@@ -53,6 +53,12 @@ class AuthServiceTest {
     @Mock
     private UserMapper userMapper;
 
+    @Mock
+    private com.sisinnov.pms.repository.RefreshTokenRepository refreshTokenRepository;
+
+    @Mock
+    private org.springframework.security.core.userdetails.UserDetailsService userDetailsService;
+
     @InjectMocks
     private AuthServiceImpl authService;
 
@@ -86,6 +92,7 @@ class AuthServiceTest {
         when(userRepository.save(any(User.class))).thenReturn(user);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
         when(jwtTokenProvider.generateToken(any(Authentication.class))).thenReturn("jwt-token");
+        doNothing().when(refreshTokenRepository).save(anyString(), any(UUID.class));
 
         AuthResponse response = authService.register(registerRequest);
 
@@ -136,6 +143,7 @@ class AuthServiceTest {
                 .thenReturn(authentication);
         when(jwtTokenProvider.generateToken(authentication)).thenReturn("jwt-token");
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
+        doNothing().when(refreshTokenRepository).save(anyString(), any(UUID.class));
 
         AuthResponse response = authService.login(loginRequest);
 

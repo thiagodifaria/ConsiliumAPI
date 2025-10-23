@@ -33,7 +33,6 @@ class TaskWorkflowIntegrationTest {
         RestAssured.port = port;
         baseUrl = "http://localhost:" + port + "/api/v1";
 
-        // 1. Register a new user
         String username = "testuser_" + System.currentTimeMillis();
 
         given()
@@ -50,7 +49,6 @@ class TaskWorkflowIntegrationTest {
         .then()
                 .statusCode(201);
 
-        // 2. Login to get token
         token = given()
                 .contentType(ContentType.JSON)
                 .body("""
@@ -69,7 +67,6 @@ class TaskWorkflowIntegrationTest {
                 .extract()
                 .path("token");
 
-        // 3. Create a project
         projectId = given()
                 .header("Authorization", "Bearer " + token)
                 .contentType(ContentType.JSON)
@@ -96,12 +93,10 @@ class TaskWorkflowIntegrationTest {
     @Test
     @DisplayName("Should complete full task workflow successfully")
     void shouldCompleteFullTaskWorkflow() {
-        // 4. Create 3 tasks in the project
         String task1Id = createTask("Task 1 - TODO", TaskStatus.TODO, TaskPriority.HIGH);
         String task2Id = createTask("Task 2 - DOING", TaskStatus.DOING, TaskPriority.MEDIUM);
         String task3Id = createTask("Task 3 - TODO", TaskStatus.TODO, TaskPriority.LOW);
 
-        // 5. GET /tasks?projectId={id} - Verify 3 tasks returned
         given()
                 .header("Authorization", "Bearer " + token)
                 .queryParam("projectId", projectId)
@@ -112,7 +107,6 @@ class TaskWorkflowIntegrationTest {
                 .body("$", hasSize(3))
                 .body("findAll { it.projectId == '%s' }".formatted(projectId), hasSize(3));
 
-        // 6. PUT /tasks/{id}/status - Change task1 from TODO to DONE
         given()
                 .header("Authorization", "Bearer " + token)
                 .contentType(ContentType.JSON)
@@ -129,7 +123,6 @@ class TaskWorkflowIntegrationTest {
                 .body("status", equalTo("DONE"))
                 .body("title", equalTo("Task 1 - TODO"));
 
-        // 7. GET /tasks?status=DONE - Verify task appears
         given()
                 .header("Authorization", "Bearer " + token)
                 .queryParam("status", "DONE")
@@ -140,7 +133,6 @@ class TaskWorkflowIntegrationTest {
                 .body("$", hasSize(greaterThanOrEqualTo(1)))
                 .body("find { it.id == '%s' }.status".formatted(task1Id), equalTo("DONE"));
 
-        // 8. DELETE /tasks/{id} - Soft delete task2
         given()
                 .header("Authorization", "Bearer " + token)
         .when()
@@ -148,7 +140,6 @@ class TaskWorkflowIntegrationTest {
         .then()
                 .statusCode(204);
 
-        // 9. GET /tasks?projectId={id} - Verify only 2 active tasks
         given()
                 .header("Authorization", "Bearer " + token)
                 .queryParam("projectId", projectId)
@@ -157,18 +148,16 @@ class TaskWorkflowIntegrationTest {
         .then()
                 .statusCode(200)
                 .body("$", hasSize(2))
-                .body("findAll { it.id == '%s' }".formatted(task2Id), hasSize(0)); // deleted task not returned
+                .body("findAll { it.id == '%s' }".formatted(task2Id), hasSize(0));
     }
 
     @Test
     @DisplayName("Should filter tasks by multiple criteria")
     void shouldFilterTasksByMultipleCriteria() {
-        // Create tasks with different statuses and priorities
         createTask("High Priority TODO", TaskStatus.TODO, TaskPriority.HIGH);
         createTask("Medium Priority TODO", TaskStatus.TODO, TaskPriority.MEDIUM);
         createTask("High Priority DONE", TaskStatus.DONE, TaskPriority.HIGH);
 
-        // Filter by status only
         given()
                 .header("Authorization", "Bearer " + token)
                 .queryParam("status", "TODO")
@@ -179,7 +168,6 @@ class TaskWorkflowIntegrationTest {
                 .body("$", hasSize(greaterThanOrEqualTo(2)))
                 .body("findAll { it.status != 'TODO' }", hasSize(0));
 
-        // Filter by priority only
         given()
                 .header("Authorization", "Bearer " + token)
                 .queryParam("priority", "HIGH")
@@ -189,7 +177,6 @@ class TaskWorkflowIntegrationTest {
                 .statusCode(200)
                 .body("findAll { it.priority != 'HIGH' }", hasSize(0));
 
-        // Filter by status AND priority
         given()
                 .header("Authorization", "Bearer " + token)
                 .queryParam("status", "TODO")
@@ -202,7 +189,6 @@ class TaskWorkflowIntegrationTest {
                 .body("find { it.title == 'High Priority TODO' }.status", equalTo("TODO"))
                 .body("find { it.title == 'High Priority TODO' }.priority", equalTo("HIGH"));
 
-        // Filter by projectId
         given()
                 .header("Authorization", "Bearer " + token)
                 .queryParam("projectId", projectId)
@@ -217,7 +203,6 @@ class TaskWorkflowIntegrationTest {
     @Test
     @DisplayName("Should reject unauthorized requests")
     void shouldRejectUnauthorizedRequests() {
-        // Try to create task without token
         given()
                 .contentType(ContentType.JSON)
                 .body("""
@@ -233,7 +218,6 @@ class TaskWorkflowIntegrationTest {
         .then()
                 .statusCode(401);
 
-        // Try to get tasks without token
         given()
         .when()
                 .get(baseUrl + "/tasks")
@@ -244,7 +228,6 @@ class TaskWorkflowIntegrationTest {
     @Test
     @DisplayName("Should validate business rules")
     void shouldValidateBusinessRules() {
-        // Try to create task with invalid project
         given()
                 .header("Authorization", "Bearer " + token)
                 .contentType(ContentType.JSON)
@@ -262,7 +245,6 @@ class TaskWorkflowIntegrationTest {
                 .statusCode(404)
                 .body("message", containsString("not found"));
 
-        // Try to update non-existent task
         given()
                 .header("Authorization", "Bearer " + token)
                 .contentType(ContentType.JSON)
@@ -276,7 +258,6 @@ class TaskWorkflowIntegrationTest {
         .then()
                 .statusCode(404);
 
-        // Try to create task with invalid data
         given()
                 .header("Authorization", "Bearer " + token)
                 .contentType(ContentType.JSON)

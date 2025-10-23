@@ -6,14 +6,19 @@ import com.sisinnov.pms.entity.Project;
 import com.sisinnov.pms.entity.Task;
 import com.sisinnov.pms.enums.TaskPriority;
 import com.sisinnov.pms.enums.TaskStatus;
+import com.sisinnov.pms.event.TaskCreatedEvent;
+import com.sisinnov.pms.event.TaskStatusChangedEvent;
 import com.sisinnov.pms.exception.BusinessException;
 import com.sisinnov.pms.exception.ResourceNotFoundException;
 import com.sisinnov.pms.mapper.TaskMapper;
+import com.sisinnov.pms.messaging.producer.TaskEventProducer;
 import com.sisinnov.pms.repository.ProjectRepository;
 import com.sisinnov.pms.repository.TaskRepository;
 import com.sisinnov.pms.repository.specification.TaskSpecification;
 import com.sisinnov.pms.service.TaskService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,9 +34,11 @@ public class TaskServiceImpl implements TaskService {
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
     private final TaskMapper taskMapper;
+    private final TaskEventProducer eventProducer;
 
     @Override
     @Transactional
+    @CacheEvict(value = "tasks", allEntries = true)
     public TaskResponse create(CreateTaskRequest request) {
         Project project = projectRepository.findById(request.projectId())
                 .orElseThrow(() -> new ResourceNotFoundException("Project", request.projectId()));
@@ -42,11 +49,14 @@ public class TaskServiceImpl implements TaskService {
 
         task = taskRepository.save(task);
 
+        eventProducer.publishTaskCreated(TaskCreatedEvent.from(task));
+
         return taskMapper.toResponse(task);
     }
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "tasks", key = "T(String).format('%s:%s:%s', #status, #priority, #projectId)")
     public List<TaskResponse> findAll(TaskStatus status, TaskPriority priority, UUID projectId) {
         Specification<Task> spec = TaskSpecification.notDeleted();
 
@@ -69,6 +79,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "tasks", allEntries = true)
     public TaskResponse updateStatus(UUID id, TaskStatus newStatus) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task", id));
@@ -77,14 +88,20 @@ public class TaskServiceImpl implements TaskService {
             throw new BusinessException("Cannot update status of deleted task");
         }
 
+        TaskStatus oldStatus = task.getStatus();
         task.setStatus(newStatus);
         task = taskRepository.save(task);
+
+        eventProducer.publishTaskStatusChanged(
+                TaskStatusChangedEvent.of(id, task.getProject().getId(), oldStatus, newStatus)
+        );
 
         return taskMapper.toResponse(task);
     }
 
     @Override
     @Transactional
+    @CacheEvict(value = "tasks", allEntries = true)
     public void delete(UUID id) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task", id));

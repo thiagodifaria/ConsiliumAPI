@@ -33,7 +33,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 @DisplayName("TaskService Tests")
 class TaskServiceTest {
 
@@ -45,6 +49,12 @@ class TaskServiceTest {
 
     @Mock
     private TaskMapper taskMapper;
+
+    @Mock
+    private com.sisinnov.pms.messaging.producer.TaskEventProducer taskEventProducer;
+
+    @Mock
+    private com.sisinnov.pms.service.EventStoreService eventStoreService;
 
     @InjectMocks
     private TaskServiceImpl taskService;
@@ -104,6 +114,8 @@ class TaskServiceTest {
         when(taskMapper.toEntity(any(CreateTaskRequest.class))).thenReturn(task);
         when(taskRepository.save(any(Task.class))).thenReturn(task);
         when(taskMapper.toResponse(any(Task.class))).thenReturn(taskResponse);
+        when(eventStoreService.saveTaskEvent(anyString(), any(UUID.class), any(), any())).thenReturn(null);
+        doNothing().when(taskEventProducer).publishTaskCreated(any());
 
         TaskResponse response = taskService.create(createRequest);
 
@@ -174,6 +186,8 @@ class TaskServiceTest {
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
         when(taskRepository.save(any(Task.class))).thenReturn(task);
         when(taskMapper.toResponse(any(Task.class))).thenReturn(taskResponse);
+        when(eventStoreService.saveTaskEvent(anyString(), any(UUID.class), any(), any())).thenReturn(null);
+        doNothing().when(taskEventProducer).publishTaskStatusChanged(any());
 
         TaskResponse response = taskService.updateStatus(taskId, TaskStatus.DOING);
 

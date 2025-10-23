@@ -8,6 +8,8 @@ import com.sisinnov.pms.mapper.ProjectMapper;
 import com.sisinnov.pms.repository.ProjectRepository;
 import com.sisinnov.pms.service.ProjectService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "projects", allEntries = true)
     public ProjectResponse create(CreateProjectRequest request) {
         if (projectRepository.existsByNameIgnoreCase(request.name())) {
             throw new BusinessException("Project name already exists: " + request.name());
@@ -42,6 +45,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "projects", key = "'all'")
     public List<ProjectResponse> findAll() {
         return projectRepository.findAll().stream()
                 .map(projectMapper::toResponse)
@@ -50,6 +54,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "projects", key = "#id")
     public Optional<ProjectResponse> findById(UUID id) {
         return projectRepository.findById(id)
                 .map(projectMapper::toResponse);
