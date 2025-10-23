@@ -69,8 +69,8 @@ git clone https://github.com/thiagodifaria/ConsiliumAPI.git
 cd ConsiliumAPI
 docker-compose up --build
 
-# API available at: http://localhost:8080
-# Swagger at: http://localhost:8080/swagger-ui.html
+# API available at: http://localhost:8081
+# Swagger at: http://localhost:8081/swagger-ui.html
 # Grafana at: http://localhost:3000 (admin/admin)
 ```
 
@@ -81,13 +81,13 @@ cd ConsiliumAPI
 mvn clean install
 mvn spring-boot:run
 
-# Application starts at http://localhost:8080
+# Application starts at http://localhost:8081
 ```
 
 ### 🔥 Test It Now!
 ```bash
 # 1. Register user
-curl -X POST "http://localhost:8080/api/v1/auth/register" \
+curl -X POST "http://localhost:8081/api/v1/auth/register" \
      -H "Content-Type: application/json" \
      -d '{
        "username": "user",
@@ -96,7 +96,7 @@ curl -X POST "http://localhost:8080/api/v1/auth/register" \
      }'
 
 # 2. Login (get JWT token)
-curl -X POST "http://localhost:8080/api/v1/auth/login" \
+curl -X POST "http://localhost:8081/api/v1/auth/login" \
      -H "Content-Type: application/json" \
      -d '{
        "username": "user",
@@ -104,7 +104,7 @@ curl -X POST "http://localhost:8080/api/v1/auth/login" \
      }'
 
 # 3. Create project (use token from login)
-curl -X POST "http://localhost:8080/api/v1/projects" \
+curl -X POST "http://localhost:8081/api/v1/projects" \
      -H "Authorization: Bearer YOUR_TOKEN_HERE" \
      -H "Content-Type: application/json" \
      -d '{
