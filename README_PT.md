@@ -138,17 +138,6 @@ cd ConsiliumAPI
 ./build.sh docker_up      # Iniciar stack Docker
 ```
 
-**Windows (PowerShell):**
-```powershell
-# Menu interativo
-.\build.ps1
-
-# Ou comandos específicos
-.\build.ps1 -Function Clean
-.\build.ps1 -Function Tests
-.\build.ps1 -Function DockerUp
-```
-
 ### Opção 2: Docker Compose Manual
 
 ```bash
@@ -527,7 +516,7 @@ X-RateLimit-Reset: 45
 
 ## 🔧 Scripts de Automação
 
-### build.sh / build.ps1
+### build.sh
 
 **Funcionalidades:**
 - ✅ Verifica dependências (Java 17+, Maven, Docker)

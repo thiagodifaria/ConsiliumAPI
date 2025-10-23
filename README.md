@@ -141,11 +141,6 @@ To facilitate development and deployment, the project includes automation script
 6. 📊 View service logs
 7. 🛑 Stop all services
 
-### Windows (PowerShell)
-
-.\build.ps1 Clean         # Clean builds
-.\build.ps1 Tests         # Run tests
-.\build.ps1 DockerUp      # Up Docker
 ```
 
 ### Development Mode (Hot Reload)
@@ -171,7 +166,7 @@ To facilitate development and deployment, the project includes automation script
 
 ### Script Features
 
-**build.sh / build.ps1**
+**build.sh**
 - ✅ Check dependencies (Java 17+, Maven, Docker)
 - ✅ Full or quick build (with/without tests)
 - ✅ Docker Management (cleanup, build, up)
